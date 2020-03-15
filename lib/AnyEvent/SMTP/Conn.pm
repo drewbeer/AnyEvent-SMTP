@@ -19,6 +19,10 @@ sub new {
 	my $self = bless { @_ }, $pkg;
 	$self->{h} = AnyEvent::Handle->new(
 		fh => $self->{fh},
+		($self->{tls_enabled}
+            ? (tls_ctx  => $self->{tls_ctx})
+            : ()
+		),
 		on_eof => sub {
 			local *__ANON__ = 'conn.on_eof';
 			warn "eof on handle";
@@ -34,6 +38,7 @@ sub new {
 			$self->event( disconnect => "Error: $!" );
 		},
 	);
+
 	$self->{h}->timeout($self->{timeout}) if $self->{timeout};
 	$self;
 }
@@ -98,7 +103,7 @@ sub line {
 			$args{cb}(undef, $line);
 		}
 	} );
-	
+
 }
 
 sub want_command {
@@ -144,6 +149,11 @@ sub data {
 		$args{cb}(substr($_[0],0,length($_[0]) - length ($1)))
 	} );
 
+}
+
+sub start_tls {
+	my $self = shift;
+	$self->{h}->push_read(tls_autostart => "accept");
 }
 
 sub new_m {

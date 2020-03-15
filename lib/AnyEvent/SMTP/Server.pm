@@ -27,7 +27,7 @@ use AnyEvent::SMTP::Conn;
 
 our $VERSION = $AnyEvent::SMTP::VERSION;use AnyEvent::SMTP ();
 
-our %CMD = map { $_ => 1 } qw( HELO EHLO MAIL RCPT QUIT DATA EXPN VRFY NOOP HELP RSET );
+our %CMD = map { $_ => 1 } qw( HELO EHLO MAIL RCPT QUIT DATA EXPN VRFY NOOP HELP RSET STARTTLS);
 
 =head1 SYNOPSIS
 
@@ -37,11 +37,11 @@ our %CMD = map { $_ => 1 } qw( HELO EHLO MAIL RCPT QUIT DATA EXPN VRFY NOOP HELP
         my $mail = shift;
         warn "Received mail from $mail->{from} to $mail->{to}\n$mail->{data}\n";
     };
-    
+
     # or
-    
+
     use AnyEvent::SMTP::Server;
-    
+
     my $server = AnyEvent::SMTP::Server->new(
         port => 2525,
         mail_validate => sub {
@@ -153,7 +153,7 @@ Invoked when server received complete mail message
 sub import {
 	my $me = shift;
 	my $pkg = caller;
-	
+
 	@_ or return;
 	for (@_) {
 		if ( $_ eq 'smtp_server') {
@@ -238,6 +238,11 @@ sub new {
 				$con->reply("500 Learn to type!");
 			}
 			#warn "Got command @_";
+		},
+		STARTTLS => sub {
+			my ($s,$con,@args) = @_;
+			$con->start_tls();
+			$con->ok("I'm ready.");
 		},
 		HELO => sub {
 			my ($s,$con,@args) = @_;
@@ -345,6 +350,7 @@ sub start {
 			$self->event( error => "couldn't accept client: $!" );
 			return;
 		}
+
 		$self->accept_connection(@_);
 	}, sub {
 		my ($sock,$host,$port) = @_;
@@ -355,17 +361,26 @@ sub start {
 		$self->event(ready => ());
 		return undef;
 	};
-	
+
 }
 
 sub accept_connection {
 	my ($self,$fh,$host,$port) = @_;
+	warn "TLS enabled\n" if $self->{tls_enabled};
 	warn "Client connected $host:$port \n" if $self->{debug};
 	my $con = AnyEvent::SMTP::Conn->new(
 		fh => $fh,
 		host => $host,
 		port => $port,
 		debug => $self->{debug},
+		($self->{tls_enabled}
+            ? (tls_enabled => $self->{tls_enabled},
+							 tls_ctx  => {
+							 cert_file => $self->{cert_file},
+							 key_file => $self->{key_file}
+							})
+            : ()
+		)
 	);
 	$self->{c}{int $con} = $con;
 	$con->reg_cb(
