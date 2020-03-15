@@ -95,9 +95,13 @@ Simple asyncronous SMTP server. Authorization not implemented yet. Patches are w
 
 =over 4
 
+=item daemon_name
+
+the name of the daemon to show in the banner
+
 =item hosthame
 
-Server FQDN
+Server FQDN to show in the banner
 
 =item host
 
@@ -106,6 +110,18 @@ Address to listen on. by default - undef (0.0.0.0)
 =item port
 
 Port to listen on
+
+=item tls_enabled
+
+enables starttls, requires cert_file and key_file
+
+=item cert_file
+
+the path to your cert file can be a pem file
+
+=item key_file
+
+the path for your private key
 
 =back
 

@@ -148,7 +148,6 @@ sub data {
 		use bytes;
 		$args{cb}(substr($_[0],0,length($_[0]) - length ($1)))
 	} );
-
 }
 
 sub sendCapabilities {
