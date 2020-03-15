@@ -248,13 +248,16 @@ sub new {
 			my ($s,$con,@args) = @_;
 			$con->{helo} = "@args";
 			$con->new_m();
-			$con->ok("STARTTLS");
+			$con->sendCapabilities();
+			$con->ok("I'm ready")
 		},
 		EHLO => sub {
 			my ($s,$con,@args) = @_;
 			$con->{helo} = "@args";
 			$con->new_m();
-			$con->ok("STARTTLS");
+			$con->sendCapabilities();
+			$con->ok("I'm ready")
+
 		},
 		RSET => sub {
 			my ($s,$con,@args) = @_;
@@ -393,7 +396,11 @@ sub accept_connection {
 		},
 	);
 	$self->eventif( client => $con );
-	$con->reply("220 $self->{hostname} AnyEvent::SMTP Ready.");
+	unless ($self->{daemon_name}) {
+		$self->{daemon_name} = 'AnyEvent::SMTP';
+	}
+
+	$con->reply("220 $self->{hostname} $self->{daemon_name} Ready.");
 	$con->want_command;
 }
 

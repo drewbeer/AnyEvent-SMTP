@@ -39,7 +39,6 @@ sub new {
 		},
 	);
 
-	# $self->{h}->starttls("accept");
 	$self->{h}->timeout($self->{timeout}) if $self->{timeout};
 	$self;
 }
@@ -152,10 +151,15 @@ sub data {
 
 }
 
+sub sendCapabilities {
+	my $self = shift;
+	$self->{h} or return warn "Not connected";
+	$self->{h}->push_write("250-PIPELINING\n250-STARTTLS\n");
+}
+
 sub start_tls {
 	my $self = shift;
 	$self->{h}->push_read(tls_autostart => "accept");
-	# $self->{h}->push_write("220 TLS go ahead");
 }
 
 sub new_m {
