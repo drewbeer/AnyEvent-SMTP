@@ -242,19 +242,19 @@ sub new {
 		STARTTLS => sub {
 			my ($s,$con,@args) = @_;
 			$con->start_tls();
-			$con->ok("I'm ready.");
+			$con->reply("220 give me your cert");
 		},
 		HELO => sub {
 			my ($s,$con,@args) = @_;
 			$con->{helo} = "@args";
 			$con->new_m();
-			$con->ok("I'm ready.");
+			$con->ok("STARTTLS");
 		},
 		EHLO => sub {
 			my ($s,$con,@args) = @_;
 			$con->{helo} = "@args";
 			$con->new_m();
-			$con->ok("Go on.");
+			$con->ok("STARTTLS");
 		},
 		RSET => sub {
 			my ($s,$con,@args) = @_;

@@ -37,8 +37,14 @@ sub new {
 			delete $self->{h};
 			$self->event( disconnect => "Error: $!" );
 		},
+		on_starttls => sub {
+			my ($handle, $success, $error) = @_;
+			warn "tls is $success\n";
+
+		}
 	);
 
+	# $self->{h}->starttls("accept");
 	$self->{h}->timeout($self->{timeout}) if $self->{timeout};
 	$self;
 }
@@ -154,6 +160,7 @@ sub data {
 sub start_tls {
 	my $self = shift;
 	$self->{h}->push_read(tls_autostart => "accept");
+	# $self->{h}->push_write("220 TLS go ahead");
 }
 
 sub new_m {
