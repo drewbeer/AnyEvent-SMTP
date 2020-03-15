@@ -37,11 +37,6 @@ sub new {
 			delete $self->{h};
 			$self->event( disconnect => "Error: $!" );
 		},
-		on_starttls => sub {
-			my ($handle, $success, $error) = @_;
-			warn "tls is $success\n";
-
-		}
 	);
 
 	# $self->{h}->starttls("accept");
